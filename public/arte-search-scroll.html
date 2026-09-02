@@ -17,9 +17,9 @@
 
    Page landmarks: header 0-133 (pinned; the 32px masthead rolls up on
    scroll and it settles at 101), search block 133-335, AI panel at y335
-   (421px while loading, 811px once answered), card rows y656 / y822,
-   "20개 자료 모두 보기" y1016, 키워드 검색 결과 y1266, then 문서·도서
-   y1461, 영상 y2003, 추천 y2460, 지역 y2887.
+   (425px while loading, 815px once answered), card rows y666 / y832,
+   "20개 자료 모두 보기" y1026, 키워드 검색 결과 y1268, then 문서·도서
+   y1470, 영상 y2012, 추천 y2469, 지역 y2908.
 
    The AI panel plays on load, on the timeline the composition used
    (frame / 30 = seconds). The keyword results are not what it waits on -
@@ -32,7 +32,7 @@ html{background:#e9e9ec}
 body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo",sans-serif;color:#111;overflow-x:hidden}
 #root{width:1920px;margin:0 auto}
 #stick{position:sticky;top:0;height:0;z-index:50;overflow:visible}
-#page{position:relative;width:1920px;height:3304px;background:#fff}
+#page{position:relative;width:1920px;height:3332px;background:#fff}
 
 /* ---- crop windows ------------------------------------------------ */
 .m{position:absolute;overflow:hidden;top:calc(var(--t)*1px);left:calc(var(--l)*1px);
@@ -62,7 +62,7 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 #loading{transition:opacity .6s ease-out}
 #loading.gone{opacity:0}
 /* everything under the panel rides down as it grows to fit the answer */
-#below{position:absolute;top:0;left:0;width:1920px;height:3304px;
+#below{position:absolute;top:0;left:0;width:1920px;height:3332px;
        transform:translateY(-390px);
        transition:transform .933s cubic-bezier(.16,1,.3,1)}
 #below.settled{transform:none}
@@ -95,7 +95,7 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
    away, so the two read as one move rather than a crossfade sitting on
    top of a resize. */
 #hdr{position:absolute;top:0;left:0;width:1920px;height:133px;overflow:hidden;background:#fff}
-#hdr i{position:absolute;top:0;left:0;width:1920px;height:3304px;
+#hdr i{position:absolute;top:0;left:0;width:1920px;height:3332px;
        background-image:url(arte-search/page-loaded.png);
        background-size:1920px auto;background-repeat:no-repeat}
 #hdr .mast{position:absolute;top:0;left:0;width:1920px;height:32px;overflow:hidden}
@@ -178,87 +178,87 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
     <!-- ===== AI panel, loading state ===== -->
     <div id="loading">
       <div class="m rise lo" style="--l:224;--t:399;--w:1472;--h:44;--d:0.667s"><i></i></div>
-      <div class="m rise lo" style="--l:224;--t:466;--w:1472;--h:35;--d:0.933s"><i></i></div>
-      <div class="m fade lo" style="--l:224;--t:536;--w:1472;--h:160;--d:1.600s;--dur:1.067s"><i></i></div>
+      <div class="m rise lo" style="--l:224;--t:471;--w:1472;--h:33;--d:0.933s"><i></i></div>
+      <div class="m fade lo" style="--l:224;--t:544;--w:1472;--h:152;--d:1.600s;--dur:1.067s"><i></i></div>
     </div>
 
     <!-- ===== AI panel, answered ===== -->
     <div id="answer">
       <div class="m fade" style="--l:224;--t:399;--w:1472;--h:44;--d:4.067s;--dur:0.600s"><i></i></div>
-      <div class="m rise" style="--l:224;--t:465;--w:1472;--h:33;--d:4.267s"><i></i></div>
-      <div class="m rise" style="--l:224;--t:498;--w:1472;--h:33;--d:4.467s"><i></i></div>
-      <div class="m rise" style="--l:220;--t:567;--w:430;--h:53;--d:4.733s"><i></i></div>
-      
+      <div class="m rise" style="--l:224;--t:471;--w:1472;--h:33;--d:4.267s"><i></i></div>
+      <div class="m rise" style="--l:224;--t:504;--w:1472;--h:33;--d:4.467s"><i></i></div>
+      <div class="m rise" style="--l:224;--t:577;--w:340;--h:49;--d:4.733s"><i></i></div>
+
       <!-- Card 1 -->
-      <div class="m zoom" style="--l:225;--t:657;--w:108;--h:152;--d:5.067s"><i></i></div>
-      <div class="olb" style="--l:224;--t:656;--w:730;--h:154;--d:5.333s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
-      <div class="m rise" style="--l:334;--t:683;--w:618;--h:23;--d:5.600s"><i></i></div>
-      <div class="m rise" style="--l:334;--t:730;--w:618;--h:27;--d:5.767s"><i></i></div>
-      <div class="m rise" style="--l:334;--t:770;--w:618;--h:17;--d:5.934s"><i></i></div>
-      
+      <div class="m zoom" style="--l:225;--t:667;--w:108;--h:152;--d:5.067s"><i></i></div>
+      <div class="olb" style="--l:224;--t:666;--w:730;--h:154;--d:5.333s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:357;--t:687;--w:572;--h:33;--d:5.600s"><i></i></div>
+      <div class="m rise" style="--l:357;--t:740;--w:142;--h:27;--d:5.767s"><i></i></div>
+      <div class="m rise" style="--l:357;--t:775;--w:572;--h:24;--d:5.934s"><i></i></div>
+
       <!-- Card 2 -->
-      <div class="m zoom" style="--l:967;--t:657;--w:108;--h:152;--d:5.533s"><i></i></div>
-      <div class="olb" style="--l:966;--t:656;--w:730;--h:154;--d:5.800s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
-      <div class="m rise" style="--l:1076;--t:683;--w:618;--h:23;--d:6.067s"><i></i></div>
-      <div class="m rise" style="--l:1076;--t:730;--w:618;--h:27;--d:6.234s"><i></i></div>
-      <div class="m rise" style="--l:1076;--t:770;--w:618;--h:17;--d:6.401s"><i></i></div>
-      
+      <div class="m zoom" style="--l:967;--t:667;--w:108;--h:152;--d:5.533s"><i></i></div>
+      <div class="olb" style="--l:966;--t:666;--w:730;--h:154;--d:5.800s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:1099;--t:687;--w:572;--h:33;--d:6.067s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:740;--w:142;--h:27;--d:6.234s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:775;--w:572;--h:24;--d:6.401s"><i></i></div>
+
       <!-- Card 3 -->
-      <div class="m zoom" style="--l:225;--t:823;--w:108;--h:152;--d:6.000s"><i></i></div>
-      <div class="olb" style="--l:224;--t:822;--w:730;--h:154;--d:6.267s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
-      <div class="m rise" style="--l:334;--t:849;--w:618;--h:23;--d:6.533s"><i></i></div>
-      <div class="m rise" style="--l:334;--t:896;--w:618;--h:27;--d:6.700s"><i></i></div>
-      <div class="m rise" style="--l:334;--t:936;--w:618;--h:17;--d:6.867s"><i></i></div>
-      
+      <div class="m zoom" style="--l:225;--t:833;--w:108;--h:152;--d:6.000s"><i></i></div>
+      <div class="olb" style="--l:224;--t:832;--w:730;--h:154;--d:6.267s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:353;--t:853;--w:406;--h:33;--d:6.533s"><i></i></div>
+      <div class="m rise" style="--l:353;--t:906;--w:109;--h:27;--d:6.700s"><i></i></div>
+      <div class="m rise" style="--l:353;--t:941;--w:580;--h:24;--d:6.867s"><i></i></div>
+
       <!-- Card 4 -->
-      <div class="m zoom" style="--l:967;--t:823;--w:108;--h:152;--d:6.467s"><i></i></div>
-      <div class="olb" style="--l:966;--t:822;--w:730;--h:154;--d:6.733s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
-      <div class="m rise" style="--l:1076;--t:849;--w:618;--h:21;--d:7.000s"><i></i></div>
-      <div class="m rise" style="--l:1076;--t:912;--w:618;--h:17;--d:7.167s"><i></i></div>
-      <div class="m rise" style="--l:1076;--t:936;--w:618;--h:17;--d:7.334s"><i></i></div>
-      <div class="m rise" style="--l:224;--t:1016;--w:1472;--h:66;--d:7.533s"><i></i></div>
+      <div class="m zoom" style="--l:967;--t:833;--w:108;--h:152;--d:6.467s"><i></i></div>
+      <div class="olb" style="--l:966;--t:832;--w:730;--h:154;--d:6.733s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:1099;--t:853;--w:406;--h:33;--d:7.000s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:917;--w:479;--h:24;--d:7.167s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:941;--w:479;--h:24;--d:7.334s"><i></i></div>
+      <div class="m rise" style="--l:224;--t:1026;--w:1472;--h:66;--d:7.533s"><i></i></div>
     </div>
 
     <div id="below">
       <!-- already on the page while the answer is still a skeleton -->
       <div id="kw">
-        <div class="m rise" style="--l:160;--t:1264;--w:1600;--h:62;--d:1.200s"><i></i></div>
-        <div class="m rise" style="--l:156;--t:1360;--w:910;--h:65;--d:1.533s"><i></i></div>
+        <div class="m rise" style="--l:160;--t:1268;--w:1600;--h:62;--d:1.200s"><i></i></div>
+        <div class="m rise" style="--l:156;--t:1364;--w:910;--h:65;--d:1.533s"><i></i></div>
       </div>
 
       <!-- ===== these wait for the viewport ===== -->
       <div data-scroll>
-        <div class="m rise" style="--l:160;--t:1466;--w:1600;--h:60"><i></i></div>
-        <div class="m zoom" style="--l:160;--t:1563;--w:205;--h:320;--d:0.080s"><i></i></div>
-        <div class="m rise" style="--l:405;--t:1610;--w:1355;--h:15;--d:0.050s"><i></i></div>
-      <div class="m rise" style="--l:405;--t:1657;--w:1355;--h:34;--d:0.217s"><i></i></div>
-      <div class="m rise" style="--l:405;--t:1706;--w:1355;--h:14;--d:0.384s"><i></i></div>
-      <div class="m rise" style="--l:405;--t:1756;--w:1355;--h:21;--d:0.551s"><i></i></div>
-      <div class="m rise" style="--l:405;--t:1786;--w:1355;--h:21;--d:0.718s"><i></i></div>
-      <div class="m rise" style="--l:405;--t:1816;--w:1355;--h:19;--d:0.885s"><i></i></div>
+        <div class="m rise" style="--l:160;--t:1470;--w:1600;--h:60"><i></i></div>
+        <div class="m zoom" style="--l:160;--t:1567;--w:205;--h:320;--d:0.080s"><i></i></div>
+        <div class="m rise" style="--l:405;--t:1607;--w:1355;--h:18;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1653;--w:1355;--h:48;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1714;--w:1355;--h:17;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1763;--w:1355;--h:26;--d:0.551s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1793;--w:1355;--h:26;--d:0.718s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1824;--w:1355;--h:22;--d:0.885s"><i></i></div>
 
-        <div class="m rise" style="--l:160;--t:2008;--w:1600;--h:60"><i></i></div>
-        <div class="m zoom" style="--l:160;--t:2105;--w:420;--h:235;--d:0.080s"><i></i></div>
-        <div class="m rise" style="--l:620;--t:2140;--w:1140;--h:15;--d:0.050s"><i></i></div>
-      <div class="m rise" style="--l:620;--t:2191;--w:1140;--h:26;--d:0.217s"><i></i></div>
-      <div class="m rise" style="--l:620;--t:2236;--w:1140;--h:14;--d:0.384s"><i></i></div>
-      <div class="m rise" style="--l:620;--t:2286;--w:1140;--h:18;--d:0.551s"><i></i></div>
+        <div class="m rise" style="--l:160;--t:2012;--w:1600;--h:60"><i></i></div>
+        <div class="m zoom" style="--l:160;--t:2109;--w:420;--h:235;--d:0.080s"><i></i></div>
+        <div class="m rise" style="--l:620;--t:2136;--w:1140;--h:17;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:620;--t:2190;--w:1140;--h:36;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:620;--t:2244;--w:1140;--h:16;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:620;--t:2294;--w:1140;--h:21;--d:0.551s"><i></i></div>
 
-        <div class="m rise" style="--l:160;--t:2465;--w:1600;--h:60"><i></i></div>
-        <div class="m rise" style="--l:160;--t:2567;--w:1600;--h:15;--d:0.050s"><i></i></div>
-      <div class="m rise" style="--l:160;--t:2618;--w:1600;--h:26;--d:0.217s"><i></i></div>
-      <div class="m rise" style="--l:160;--t:2663;--w:1600;--h:14;--d:0.384s"><i></i></div>
-      <div class="m rise" style="--l:160;--t:2713;--w:1600;--h:20;--d:0.551s"><i></i></div>
-      <div class="m rise" style="--l:160;--t:2743;--w:1600;--h:18;--d:0.718s"><i></i></div>
+        <div class="m rise" style="--l:160;--t:2469;--w:1600;--h:60"><i></i></div>
+        <div class="m rise" style="--l:160;--t:2569;--w:1600;--h:17;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2623;--w:1600;--h:35;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2677;--w:1600;--h:16;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2727;--w:1600;--h:23;--d:0.551s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2757;--w:1600;--h:21;--d:0.718s"><i></i></div>
 
-        <div class="m rise" style="--l:160;--t:2892;--w:1600;--h:60"><i></i></div>
-        <div class="m zoom" style="--l:160;--t:2989;--w:419;--h:235;--d:0.080s"><i></i></div>
-        <div class="m rise" style="--l:619;--t:2994;--w:1141;--h:15;--d:0.050s"><i></i></div>
-      <div class="m rise" style="--l:619;--t:3045;--w:1141;--h:29;--d:0.217s"><i></i></div>
-      <div class="m rise" style="--l:619;--t:3090;--w:1141;--h:14;--d:0.384s"><i></i></div>
-      <div class="m rise" style="--l:619;--t:3140;--w:1141;--h:20;--d:0.551s"><i></i></div>
-      <div class="m rise" style="--l:619;--t:3169;--w:1141;--h:19;--d:0.718s"><i></i></div>
-      <div class="m rise" style="--l:619;--t:3200;--w:1141;--h:18;--d:0.885s"><i></i></div>
+        <div class="m rise" style="--l:160;--t:2908;--w:1600;--h:60"><i></i></div>
+        <div class="m zoom" style="--l:160;--t:3005;--w:419;--h:235;--d:0.080s"><i></i></div>
+        <div class="m rise" style="--l:619;--t:3008;--w:1141;--h:17;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3062;--w:1141;--h:37;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3116;--w:1141;--h:16;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3166;--w:1141;--h:23;--d:0.551s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3196;--w:1141;--h:21;--d:0.718s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3226;--w:1141;--h:21;--d:0.885s"><i></i></div>
       </div>
     </div>
 
@@ -307,10 +307,10 @@ function playLoad(){
 
   const at=(f,fn)=>timers.push(setTimeout(fn,f/30*1000));
   at(8,()=>{panel.style.transition='height .867s cubic-bezier(.16,1,.3,1)';
-             panel.style.height='421px';});
+             panel.style.height='425px';});
   at(108,()=>loading.classList.add('gone'));
   at(118,()=>{panel.style.transition='height .933s cubic-bezier(.16,1,.3,1)';
-               panel.style.height='811px';
+               panel.style.height='815px';
                below.classList.add('settled');});
   // every element carries its own transition-delay, so one class is enough
   requestAnimationFrame(()=>{
