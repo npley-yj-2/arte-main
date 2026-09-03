@@ -56,6 +56,10 @@ html{background:#fff}
 body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo",sans-serif;color:#111;overflow-x:hidden}
 #root{width:1920px;margin:0 auto}
 #stick{position:sticky;top:0;height:0;z-index:50;overflow:visible}
+/* the "공식누리집" masthead strip's own #eef2f7 tint, extended past
+   the 1920px page to the true viewport edges when the window is wider */
+.mast-bleed{position:absolute;top:0;left:50%;width:100vw;height:32px;
+  margin-left:-50vw;background:#eef2f7}
 #page{position:relative;width:1920px;height:3332px;background:#fff}
 
 /* ---- crop windows ------------------------------------------------ */
@@ -207,6 +211,7 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 
 <div id="root">
   <div id="stick">
+    <div class="mast-bleed"></div>
     <div id="hdr">
       <div class="mast"><i></i></div>
       <div class="icons"><i></i></div>
