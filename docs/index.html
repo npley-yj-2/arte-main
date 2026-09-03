@@ -145,6 +145,8 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 #root.scrolled #hdr .word i{opacity:0}
 #root.scrolled #hdr .nav,#root.scrolled #hdr .acct{opacity:0}
 #root.scrolled #hdr .mark{opacity:1}
+#hdr .word,#hdr .mark{cursor:pointer}
+#hdr .word:hover i,#hdr .mark:hover i{opacity:.72}
 
 /* ---- header links -------------------------------------------------
    문서·도서 and 지역별 정보 in the nav link out to their own pages. Each hit
@@ -181,8 +183,10 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
       <div class="icons"><i></i></div>
       <div class="nav"><i></i></div>
       <div class="acct"><i></i></div>
-      <div class="word"><i></i></div>
-      <div class="mark"><i></i></div>
+      <a class="word" href="arte-main-scroll.html" title="arte 라이브러리 메인"
+         aria-label="arte 라이브러리 메인"><i></i></a>
+      <a class="mark" href="arte-main-scroll.html" title="arte 라이브러리 메인"
+         aria-label="arte 라이브러리 메인"><i></i></a>
       <a class="navlink" href="arte-document-scroll.html" title="문서·도서"><b></b></a>
       <a class="navlink" href="arte-location-scroll.html" title="지역별 정보" style="left:873px;width:190px"><b></b></a>
     </div>
@@ -304,17 +308,18 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
       <div class="m rise" style="--l:260;--t:3563;--w:199;--h:341;--d:.933s"><i></i></div>
 
       <!-- 각 표지는 문서 카드와 동일하게 "image 9994" 레이어가 249x341 전체를
-           채우고, 제목·저자는 그 아래쪽에 겹쳐지는 하나의 rise 블록이다 -->
+           채우고, 제목·저자는 그 아래쪽에 겹쳐지는 하나의 rise 블록이다 - 표지
+           이미지와 같은 --d를 써서 캡션이 표지와 동시에 등장한다 -->
       <div class="m zoom" style="--l:857;--t:3563;--w:249;--h:341;--d:1.133s"><i></i></div>
-      <div class="m rise" style="--l:857;--t:3734;--w:249;--h:170;--d:2.133s"><i></i></div>
+      <div class="m rise" style="--l:857;--t:3734;--w:249;--h:170;--d:1.133s"><i></i></div>
       <div class="olb" style="--l:857;--t:3563;--w:249;--h:341;--d:1.133s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
 
       <div class="m zoom" style="--l:1134;--t:3563;--w:249;--h:341;--d:1.4s"><i></i></div>
-      <div class="m rise" style="--l:1134;--t:3734;--w:249;--h:170;--d:2.4s"><i></i></div>
+      <div class="m rise" style="--l:1134;--t:3734;--w:249;--h:170;--d:1.4s"><i></i></div>
       <div class="olb" style="--l:1134;--t:3563;--w:249;--h:341;--d:1.4s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
 
       <div class="m zoom" style="--l:1411;--t:3563;--w:249;--h:341;--d:1.667s"><i></i></div>
-      <div class="m rise" style="--l:1411;--t:3734;--w:249;--h:170;--d:2.667s"><i></i></div>
+      <div class="m rise" style="--l:1411;--t:3734;--w:249;--h:170;--d:1.667s"><i></i></div>
       <div class="olb" style="--l:1411;--t:3563;--w:249;--h:341;--d:1.667s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
 
       <!-- 이벤트·행사 -->
