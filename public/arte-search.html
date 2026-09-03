@@ -20,9 +20,10 @@
      .rise   text: rises from below while fading in
      .zoom   images: scale 120% -> 100% while fading in
      .fade   plain crossfade, no movement
-     .unf    a horizontal wipe open from the left edge - used for the
-             keyword-result category tabs, which unfold left to right
-             one after another instead of rising like normal text
+     .slide  a whole tab sliding in from the left while fading in - used
+             for the keyword-result category tabs, which move into place
+             one after another instead of rising like normal text or
+             having a mask wipe open in situ
      .olb    a 1px rule drawn around a box, one edge at a time from the
              top-left corner, running anti-clockwise (used for the result
              card outlines)
@@ -73,13 +74,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 .fade>i{opacity:0;transition:opacity var(--dur,1.067s) ease-out;transition-delay:var(--d,0s)}
 .fade.in>i{opacity:1}
 
-/* ---- horizontal unfold (keyword-result category tabs) ------------- */
-/* Each tab is its own window; they wipe open left to right in sequence
-   rather than rising, so the row reads as tabs unfolding one after
-   another instead of a single block of text. */
-.unf{clip-path:inset(0 100% 0 0);
-     transition:clip-path .4s cubic-bezier(.33,1,.68,1);transition-delay:var(--d,0s)}
-.unf.in{clip-path:inset(0 0 0 0)}
+/* ---- sideways slide (keyword-result category tabs) ---------------- */
+/* Each tab is a whole, already-cropped unit that slides in from the left
+   and settles into its slot, one after another - the row reads as tabs
+   moving into place, not a mask widening open in situ. */
+.slide{transform:translateX(-48px);opacity:0;
+       transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .4s ease-out;
+       transition-delay:var(--d,0s)}
+.slide.in{transform:none;opacity:1}
 
 /* ---- single drawn line (search-bar rule, category underline) ------ */
 /* Same pen-drawing idea as .ol below, just one edge: a flat rule that
@@ -273,13 +275,13 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
       <!-- already on the page while the answer is still a skeleton -->
       <div id="kw">
         <div class="m rise" style="--l:160;--t:1268;--w:1600;--h:62;--d:1.200s"><i></i></div>
-        <!-- category tabs: each one unfolds left to right, in sequence -->
-        <div class="m unf" style="--l:156;--t:1364;--w:132;--h:65;--d:1.533s"><i></i></div>
-        <div class="m unf" style="--l:288;--t:1364;--w:132;--h:65;--d:1.623s"><i></i></div>
-        <div class="m unf" style="--l:420;--t:1364;--w:132;--h:65;--d:1.713s"><i></i></div>
-        <div class="m unf" style="--l:552;--t:1364;--w:132;--h:65;--d:1.803s"><i></i></div>
-        <div class="m unf" style="--l:684;--t:1364;--w:132;--h:65;--d:1.893s"><i></i></div>
-        <div class="m unf" style="--l:816;--t:1364;--w:250;--h:65;--d:1.983s"><i></i></div>
+        <!-- category tabs: each one slides in from the left, in sequence -->
+        <div class="m slide" style="--l:156;--t:1364;--w:132;--h:65;--d:1.533s"><i></i></div>
+        <div class="m slide" style="--l:288;--t:1364;--w:132;--h:65;--d:1.623s"><i></i></div>
+        <div class="m slide" style="--l:420;--t:1364;--w:132;--h:65;--d:1.713s"><i></i></div>
+        <div class="m slide" style="--l:552;--t:1364;--w:132;--h:65;--d:1.803s"><i></i></div>
+        <div class="m slide" style="--l:684;--t:1364;--w:132;--h:65;--d:1.893s"><i></i></div>
+        <div class="m slide" style="--l:816;--t:1364;--w:250;--h:65;--d:1.983s"><i></i></div>
       </div>
 
       <!-- ===== these wait for the viewport ===== -->
@@ -362,7 +364,7 @@ function playLoad(){
   loading.classList.remove('gone');
   below.classList.remove('settled');
   gsap.set(panel,{height:0});
-  document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#kw .m,#kw .unf')
+  document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#kw .m,#kw .slide')
     .forEach(e=>e.classList.remove('in'));
   document.querySelectorAll('#answer .olb').forEach(e=>e.classList.remove('in'));
 
@@ -374,7 +376,7 @@ function playLoad(){
 
   // every element carries its own transition-delay, so one class is enough
   requestAnimationFrame(()=>{
-    document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#answer .olb,#kw .m,#kw .unf')
+    document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#answer .olb,#kw .m,#kw .slide')
       .forEach(e=>e.classList.add('in'));
   });
 }
