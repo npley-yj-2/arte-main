@@ -42,6 +42,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
   margin-left:-50vw;background:#eef2f7}
 #page{position:relative;width:1920px;height:5359px;background:#fff}
 
+/* footer: its light-grey body and dark bottom bar are their own colors,
+   distinct from the page's white - extended past 1920px the same way as
+   the masthead. #page has no overflow:hidden, so no sibling trick needed
+   here, just the usual centered-viewport breakout. */
+.footer-bleed{position:absolute;left:50%;width:100vw;margin-left:-50vw}
+.footer-bleed.grey{top:4937px;height:382px;background:#f4f5f6}
+.footer-bleed.dark{top:5319px;height:40px;background:#1e2124}
+
 /* ---- crop windows: a mask at the element's page position, and the
    shared page render offset inside it so the right slice shows ---- */
 .m{position:absolute;overflow:hidden;
@@ -358,6 +366,8 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 
       <!-- 배너·푸터: 등장 모션 없이, 스크롤로 페이지에 들어오면 바로 보인다 -->
       <div class="m" style="--l:0;--t:4749;--w:1920;--h:132"><i></i></div>
+      <div class="footer-bleed grey"></div>
+      <div class="footer-bleed dark"></div>
       <div class="m" style="--l:0;--t:4881;--w:1920;--h:478"><i></i></div>
 
     </div>
