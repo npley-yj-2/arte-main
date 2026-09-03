@@ -113,7 +113,15 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 #hdr{position:absolute;top:0;left:0;width:1920px;height:133px}
 #hdr .white{position:absolute;top:32px;left:0;width:1920px;height:101px;background:#fff}
 #hdr .mast{position:absolute;top:0;left:0;width:1920px}
-#hdr .nav{position:absolute;top:60px;left:459px;width:917px;transition:opacity .600s ease-in-out}
+/* nav labels are real text now (shared position/size/type across all four
+   pages) instead of a per-page baked image, so the only thing that differs
+   page to page is which item's color is .active - never its position */
+#hdr .nav{position:absolute;top:60px;left:459px;width:917px;height:45px;
+          transition:opacity .600s ease-in-out}
+#hdr .nav .item{position:absolute;top:0;height:45px;line-height:45px;
+  font:700 23px/45px Pretendard,sans-serif;color:#000;white-space:nowrap;
+  transform:translateX(-50%);pointer-events:none}
+#hdr .nav .item.active{color:#007ade}
 #hdr .acct{position:absolute;top:62px;left:1475px;width:201px;transition:opacity .600s ease-in-out}
 #hdr .ico{position:absolute;top:66px;left:1690px;width:71px}
 /* the wordmark sits in a mask that closes leftwards onto the square's
@@ -177,7 +185,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
     <div id="hdr">
       <div class="white"></div>
       <div class="mast"><img src="arte-document/hd-masthead.png" alt=""></div>
-      <div class="nav"><img src="arte-document/hd-nav.png" alt=""></div>
+      <nav class="nav">
+        <span class="item active" style="left:85px">문서·도서</span>
+        <span class="item" style="left:232px">영상</span>
+        <span class="item" style="left:353px">추천</span>
+        <span class="item" style="left:509px">지역별 정보</span>
+        <span class="item" style="left:666px">통계</span>
+        <span class="item" style="left:823px">누리집 안내</span>
+      </nav>
       <a class="navlink" href="arte-location.html" title="지역별 정보"
          aria-label="지역별 정보"><b></b></a>
       <div class="acct"><img src="arte-document/hd-account.png" alt=""></div>

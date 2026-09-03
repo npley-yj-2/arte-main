@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>arte 라이브러리 · 스크롤 모션 미리보기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
 <style>
 /* ------------------------------------------------------------------
    A scroll-driven port of the `arte-main` Remotion composition,
@@ -124,9 +125,15 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 #hdr .mast i{background-position:0 0}
 #hdr .icons{position:absolute;top:32px;left:1680px;width:240px;height:101px;overflow:hidden}
 #hdr .icons i{background-position:-1680px -32px}
-#hdr .nav{position:absolute;top:60px;left:459px;width:917px;height:45px;overflow:hidden;
+/* nav labels are real text now (shared position/size/type across all four
+   pages) instead of a per-page baked image, so the only thing that differs
+   page to page is which item's color is .active - never its position */
+#hdr .nav{position:absolute;top:60px;left:459px;width:917px;height:45px;
           transition:opacity .600s ease-in-out}
-#hdr .nav i{background-position:-459px -60px}
+#hdr .nav .item{position:absolute;top:0;height:45px;line-height:45px;
+  font:700 23px/45px Pretendard,sans-serif;color:#000;white-space:nowrap;
+  transform:translateX(-50%);pointer-events:none}
+#hdr .nav .item.active{color:#007ade}
 #hdr .acct{position:absolute;top:62px;left:1475px;width:201px;height:41px;overflow:hidden;
            transition:opacity .600s ease-in-out}
 #hdr .acct i{background-position:-1475px -62px}
@@ -179,7 +186,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
     <div id="hdr">
       <div class="mast"><i></i></div>
       <div class="icons"><i></i></div>
-      <div class="nav"><i></i></div>
+      <nav class="nav">
+        <span class="item" style="left:85px">문서·도서</span>
+        <span class="item" style="left:232px">영상</span>
+        <span class="item" style="left:353px">추천</span>
+        <span class="item" style="left:509px">지역별 정보</span>
+        <span class="item" style="left:666px">통계</span>
+        <span class="item" style="left:823px">누리집 안내</span>
+      </nav>
       <div class="acct"><i></i></div>
       <a class="word" href="arte-main.html" title="arte 라이브러리 메인"
          aria-label="arte 라이브러리 메인"><i></i></a>
