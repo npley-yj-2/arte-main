@@ -20,10 +20,12 @@
      .rise   text: rises from below while fading in
      .zoom   images: scale 120% -> 100% while fading in
      .fade   plain crossfade, no movement
-     .slide  a whole tab sliding in from the left while fading in - used
-             for the keyword-result category tabs, which move into place
-             one after another instead of rising like normal text or
-             having a mask wipe open in situ
+     .slide  keyword-result category tabs: "전체" fades in in place, then
+             every other tab - which starts collapsed onto "전체"'s own
+             spot (GSAP sets its x from --dx) - slides out to its slot,
+             all together. Same technique as the main page's 문서
+             category chips; GSAP drives x/opacity directly (see
+             playLoad), not a CSS transition
      .olb    a 1px rule drawn around a box, one edge at a time from the
              top-left corner, running anti-clockwise (used for the result
              card outlines)
@@ -75,13 +77,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 .fade.in>i{opacity:1}
 
 /* ---- sideways slide (keyword-result category tabs) ---------------- */
-/* Each tab is a whole, already-cropped unit that slides in from the left
-   and settles into its slot, one after another - the row reads as tabs
-   moving into place, not a mask widening open in situ. */
-.slide{transform:translateX(-48px);opacity:0;
-       transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .4s ease-out;
-       transition-delay:var(--d,0s)}
-.slide.in{transform:none;opacity:1}
+/* Same technique as the 문서 category chips on the main page: every tab
+   starts collapsed onto the first ("전체") tab's spot (GSAP sets its
+   x offset from --dx) and, once the "전체" tab has faded in in place,
+   the rest slide out together to their own slots - the row unfolds out
+   of that one anchor point rather than a mask widening open in situ.
+   GSAP owns transform/opacity directly here (see playLoad), not a CSS
+   transition, so this only needs to hide the tab before that runs. */
+.slide{opacity:0}
 
 /* ---- single drawn line (search-bar rule, category underline) ------ */
 /* Same pen-drawing idea as .ol below, just one edge: a flat rule that
@@ -275,13 +278,15 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
       <!-- already on the page while the answer is still a skeleton -->
       <div id="kw">
         <div class="m rise" style="--l:160;--t:1268;--w:1600;--h:62;--d:1.200s"><i></i></div>
-        <!-- category tabs: each one slides in from the left, in sequence -->
-        <div class="m slide" style="--l:156;--t:1364;--w:132;--h:65;--d:1.533s"><i></i></div>
-        <div class="m slide" style="--l:288;--t:1364;--w:132;--h:65;--d:1.623s"><i></i></div>
-        <div class="m slide" style="--l:420;--t:1364;--w:132;--h:65;--d:1.713s"><i></i></div>
-        <div class="m slide" style="--l:552;--t:1364;--w:132;--h:65;--d:1.803s"><i></i></div>
-        <div class="m slide" style="--l:684;--t:1364;--w:132;--h:65;--d:1.893s"><i></i></div>
-        <div class="m slide" style="--l:816;--t:1364;--w:250;--h:65;--d:1.983s"><i></i></div>
+        <!-- category tabs: "전체" fades in in place, then the rest unfold
+             out of its spot together, exactly like the main page's 문서
+             category chips (each --dx is the offset back onto "전체") -->
+        <div class="m slide" style="--l:156;--t:1364;--w:132;--h:65;--dx:0"><i></i></div>
+        <div class="m slide" style="--l:288;--t:1364;--w:132;--h:65;--dx:-132"><i></i></div>
+        <div class="m slide" style="--l:420;--t:1364;--w:132;--h:65;--dx:-264"><i></i></div>
+        <div class="m slide" style="--l:552;--t:1364;--w:132;--h:65;--dx:-396"><i></i></div>
+        <div class="m slide" style="--l:684;--t:1364;--w:132;--h:65;--dx:-528"><i></i></div>
+        <div class="m slide" style="--l:816;--t:1364;--w:250;--h:65;--dx:-660"><i></i></div>
       </div>
 
       <!-- ===== these wait for the viewport ===== -->
@@ -358,13 +363,19 @@ addEventListener('resize',()=>{scale=fit();ScrollTrigger.refresh();});
    while everything underneath rides down with it. A GSAP timeline drives
    the panel's height directly, so nothing here still relies on the CSS
    `transition` property. */
+const slideTabs=[...document.querySelectorAll('#kw .slide')];
+// gsap calls a function-value as (index, target, targets), not (el) - so
+// the element is the 2nd argument here, not the 1st
+const slideDx=(i,el)=>parseFloat(el.style.getPropertyValue('--dx'))||0;
+
 let tl;
 function playLoad(){
   if(tl) tl.kill();
   loading.classList.remove('gone');
   below.classList.remove('settled');
   gsap.set(panel,{height:0});
-  document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#kw .m,#kw .slide')
+  gsap.set(slideTabs,{opacity:0,x:slideDx});
+  document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#kw .m:not(.slide)')
     .forEach(e=>e.classList.remove('in'));
   document.querySelectorAll('#answer .olb').forEach(e=>e.classList.remove('in'));
 
@@ -372,11 +383,16 @@ function playLoad(){
     .to(panel,{height:425,duration:.867,ease:'expo.out'},8/30)
     .call(()=>loading.classList.add('gone'),null,108/30)
     .to(panel,{height:815,duration:.933,ease:'expo.out'},118/30)
-    .call(()=>below.classList.add('settled'),null,118/30);
+    .call(()=>below.classList.add('settled'),null,118/30)
+    // category tabs: same beat and easing as the main page's 문서 chips -
+    // "전체" fades in where it already sits, then the rest unfold out of
+    // its spot together rather than arriving one at a time
+    .to(slideTabs[0],{opacity:1,duration:1.067,ease:'expo.out'},1.533)
+    .to(slideTabs.slice(1),{x:0,opacity:1,duration:1.067,ease:'expo.out'},1.666);
 
   // every element carries its own transition-delay, so one class is enough
   requestAnimationFrame(()=>{
-    document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#answer .olb,#kw .m,#kw .slide')
+    document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#answer .olb,#kw .m:not(.slide)')
       .forEach(e=>e.classList.add('in'));
   });
 }
