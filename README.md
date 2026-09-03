@@ -1,54 +1,21 @@
-# Remotion video
+# arte 라이브러리 스크롤 모션
 
-<p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.apng">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif">
-    </picture>
-  </a>
-</p>
+Figma 시안을 기반으로 만든, 스크롤에 반응하는 정적 HTML 사이트입니다.
+[GSAP](https://gsap.com)의 ScrollTrigger로 각 섹션의 등장 애니메이션을 구현했습니다.
 
-Welcome to your Remotion project!
+## 구조
 
-## Commands
+- `public/` — 사이트 원본 (`arte-main-scroll.html`, `arte-document-scroll.html`, `arte-location-scroll.html`, `arte-search-scroll.html`)과 각 페이지가 쓰는 이미지 에셋
+- `docs/` — GitHub Pages로 배포되는 사본. `docs/index.html`은 `public/arte-main-scroll.html`과 항상 같은 내용으로 유지합니다.
 
-**Install Dependencies**
+## 로컬에서 보기
+
+빌드 과정이 없는 순수 정적 파일이라 `public/` 디렉터리를 아무 정적 서버로 열면 됩니다.
 
 ```console
-npm i
+npx serve public
 ```
 
-**Start Preview**
+## 배포
 
-```console
-npm run dev
-```
-
-**Render video**
-
-```console
-npx remotion render
-```
-
-**Upgrade Remotion**
-
-```console
-npx remotion upgrade
-```
-
-## Docs
-
-Get started with Remotion by reading the [fundamentals page](https://www.remotion.dev/docs/the-fundamentals).
-
-## Help
-
-We provide help on our [Discord server](https://discord.gg/6VzzNDwUwV).
-
-## Issues
-
-Found an issue with Remotion? [File an issue here](https://github.com/remotion-dev/remotion/issues/new).
-
-## License
-
-Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+`docs/` 아래 내용이 GitHub Pages로 그대로 서빙됩니다: https://npley-yj-2.github.io/arte-main/

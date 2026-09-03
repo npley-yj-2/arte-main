@@ -53,6 +53,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 .rise>i,.fade>i,.zoom>i{opacity:0}
 .zoom>i{transform-origin:calc(var(--w)*.5px) calc(var(--h)*.5px)}
 
+/* hero headline: black, then wiped left to right by the pink version
+   underneath it - a plain image reveal, not a page.png crop, so it's
+   clip-path rather than the .m mask technique used everywhere else */
+.wipe{position:absolute;overflow:hidden;clip-path:inset(0 100% 0 0);
+      top:calc(var(--t)*1px);left:calc(var(--l)*1px);
+      width:calc(var(--w)*1px);height:calc(var(--h)*1px)}
+.wipe img{display:block}
+
 /* category chips / notice rows: the box itself is what GSAP moves
    (translateX / translateY), the shared render inside stays fixed on
    its own resting crop the whole time - see the JS comment below */
@@ -184,8 +192,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 
     <!-- ===== hero: plays once on load, not scroll-gated ===== -->
     <div id="intro">
-      <div class="m rise" style="--l:713;--t:213;--w:494;--h:85;--d:0s"><i></i></div>
-      <div class="m rise" style="--l:471;--t:298;--w:978;--h:85;--d:.467s"><i></i></div>
+      <img style="position:absolute;top:213px;left:713px;width:494px" src="arte-main/headline-line1-black.png" alt="">
+      <div class="wipe" style="--l:713;--t:213;--w:494;--h:85;--d:0s">
+        <img src="arte-main/headline-line1.png" alt="" width="494" height="85">
+      </div>
+      <img style="position:absolute;top:298px;left:471px;width:978px" src="arte-main/headline-line2-black.png" alt="">
+      <div class="wipe" style="--l:471;--t:298;--w:978;--h:85;--d:.467s">
+        <img src="arte-main/headline-line2.png" alt="" width="978" height="85">
+      </div>
 
       <a id="searchbar" class="m rise" href="arte-search-scroll.html" title="AI 검색"
          style="--l:471;--t:423;--w:978;--h:98;--d:1.333s">
@@ -373,6 +387,11 @@ document.querySelectorAll('#intro .rise').forEach((el) => {
   const i = el.querySelector('i');
   introTl.fromTo(i, { y: num(el, '--h'), opacity: 0 },
     { y: 0, opacity: 1, duration: .733, ease: 'expo.out' }, num(el, '--d'));
+});
+// hero headline: black wiped away by pink, left to right
+document.querySelectorAll('#intro .wipe').forEach((el) => {
+  introTl.fromTo(el, { clipPath: 'inset(0% 100% 0% 0%)' },
+    { clipPath: 'inset(0% 0% 0% 0%)', duration: .8, ease: 'expo.out' }, num(el, '--d'));
 });
 function playIntro() { introTl.restart(); }
 playIntro();

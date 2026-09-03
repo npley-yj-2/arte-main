@@ -8,19 +8,20 @@
 <style>
 /* ------------------------------------------------------------------
    A scroll-driven port of the `arte-document` Remotion composition,
-   rebuilt for the revised 1920x1844 screen.
+   animated with GSAP.
 
-   Every animated element is the same PNG slice the composition uses,
+   Every windowed element is the same PNG slice the composition uses,
    sitting in a mask fixed at its page coordinates:
 
      .m      a crop window at the element's page position
-      img    the slice itself, and the thing that actually moves
+      img    the slice itself, and (for the two intro elements that
+              animate) the thing GSAP actually moves
 
-   Durations are the composition's frame counts at 30fps, so a 24-frame
-   reveal is 0.8s here. In the composition the page scrolled on a fixed
-   timeline; here the reader drives it, so the intro (frames 0-168, which
-   played at scroll 0) runs on load and everything below the fold waits
-   for the viewport instead.
+   Only the title and the doc/book tabs get their own entrance motion,
+   rising out of their mask on load. Everything from "아카이브" down -
+   including the sub-heading's own rule - is one static block that
+   simply fades in as a whole once the intro above has settled, so
+   there is no per-element choreography inside it.
 
    Page landmarks: header 0-133 (pinned), breadcrumb 153, title 253,
    doc/book tabs 377, 문서 553, filter rail 645-1764, category tabs 649,
@@ -41,76 +42,18 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
    width:calc(var(--w)*1px);height:calc(var(--h)*1px)}
 .m>img{position:absolute;top:0;left:0;width:100%;display:block}
 
-/* text rises out of its own mask, bottom to top - 28 frames */
-.rise>img{transform:translateY(100%);
-          transition:transform .933s cubic-bezier(.16,1,.3,1);
-          transition-delay:var(--d,0s)}
-.rise.in>img{transform:none}
-/* the card copy is quicker, 24 frames */
-.rise.quick>img{transition-duration:.800s}
-/* tall blocks travel a fixed 72px and fade instead of wiping the whole
-   band, which at 247px would read as a curtain rather than a rise */
-.rise.short>img{transform:translateY(72px);opacity:0;
-                transition:transform 1.133s cubic-bezier(.16,1,.3,1),opacity .667s ease-out;
-                transition-delay:var(--d,0s)}
-.rise.short.in>img{transform:none;opacity:1}
-
-/* cover art settles from 120% to 100% inside a fixed crop - 40 frames */
-.zoom>img{transform:scale(1.2);opacity:0;
-          transition:transform 1.333s cubic-bezier(.16,1,.3,1),opacity .533s ease-out;
-          transition-delay:var(--d,0s)}
-.zoom.in>img{transform:none;opacity:1}
-
-/* ---- filter rules, drawn left to right -------------------------- */
-/* The revised design has no grey panel behind the rail - the groups are
-   separated by horizontal rules instead. Two are 4px section rules, the
-   rest 1px dividers under each accordion row. */
-.rule{position:absolute;background:#000;
-      top:calc(var(--t)*1px);left:calc(var(--l)*1px);
-      width:calc(var(--w)*1px);height:calc(var(--h)*1px);
-      clip-path:inset(0 100% 0 0);
-      transition:clip-path 1s cubic-bezier(.16,1,.3,1) var(--d,0s)}
-.rule.in{clip-path:inset(0 0 0 0)}
-
-/* ---- category tabs, fanning out to the right -------------------- */
-.chip{position:absolute;overflow:hidden;
-      top:calc(var(--t)*1px);left:calc(var(--l)*1px);width:calc(var(--w)*1px);height:45px}
-.chip>img{position:absolute;top:0;left:0;width:100%;display:block;
-          transform:translateX(var(--dx));opacity:0;
-          transition:transform 1.333s cubic-bezier(.16,1,.3,1),opacity 1.333s cubic-bezier(.16,1,.3,1);
-          transition-delay:var(--d,0s)}
-.chip.in>img{transform:none;opacity:1}
-.chip.anchor{overflow:visible}
-/* "전체" is the anchor the rest unfold from, so it neither travels nor
-   fades - but it should not be on screen before the row's turn either. A
-   near-zero opacity transition on the group's delay makes it simply appear
-   at that moment, the way the composition steps it in on frame 62. */
-.chip.anchor>img{transform:none;opacity:0;
-                 transition:opacity .001s linear;transition-delay:var(--d,0s)}
-.chip.anchor.in>img{opacity:1}
-
-/* ---- card outlines ---------------------------------------------- */
-/* Four 1px rules drawn back to back from the top-left corner, running
-   anti-clockwise - down the left edge, across the bottom, up the right
-   edge, then back along the top. 14 frames each, linear, so the pen
-   keeps a constant speed the whole way round. */
-.olb{position:absolute;top:calc(var(--t)*1px);left:calc(var(--l)*1px);
-     width:calc(var(--w)*1px);height:calc(var(--h)*1px);pointer-events:none}
-.ol{position:absolute;background:#000;transition:clip-path .467s linear}
-.e1{left:0;top:0;width:1px;height:100%;clip-path:inset(0 0 100% 0);
-    transition-delay:calc(var(--d,0s))}
-.e2{left:0;bottom:0;width:100%;height:1px;clip-path:inset(0 100% 0 0);
-    transition-delay:calc(var(--d,0s) + .467s)}
-.e3{right:0;top:0;width:1px;height:100%;clip-path:inset(100% 0 0 0);
-    transition-delay:calc(var(--d,0s) + .933s)}
-.e4{left:0;top:0;width:100%;height:1px;clip-path:inset(0 0 0 100%);
-    transition-delay:calc(var(--d,0s) + 1.400s)}
-.olb.in .ol{clip-path:inset(0 0 0 0)}
+/* title + category tabs: the only two things that rise on their own -
+   everything else below is one plain fade, see #docContent */
+.rise>img{opacity:0}
 
 /* ---- "아카이브" content onward: no per-element choreography, just one
-   fade-in once the header/title/tabs above have finished settling ---- */
-.doc-fade{opacity:0;transition:opacity .8s ease-out;transition-delay:2.0s}
-.doc-fade.in{opacity:1}
+   fade-in once the title/tabs above have settled. Every element in here
+   is a plain, always-static crop (or rule) - #docContent's own opacity
+   is the only thing GSAP animates. ---- */
+#docContent{opacity:0}
+.rule{position:absolute;background:#000;
+      top:calc(var(--t)*1px);left:calc(var(--l)*1px);
+      width:calc(var(--w)*1px);height:calc(var(--h)*1px)}
 
 /* ---- "list" column (category tabs / notice / count row / cards /
    pagination), rebuilt with real text from the current Figma design -
@@ -188,11 +131,12 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 #root.scrolled #hdr .mark{opacity:1}
 #root.scrolled #hdr .nav,#root.scrolled #hdr .acct{opacity:0}
 
-/* ---- header links ----------------------------------------------- */
-/* Two navigations, both taken from the header itself rather than added as
+/* ---- header links -----------------------------------------------
+   Two navigations, both taken from the header itself rather than added as
    viewer chrome:
      the logo (Figma imgi_10_logo) -> arte-main
      the search icon (Figma mystery) -> arte-search
+   문서·도서 is this page itself, so only 지역별 정보 needs a hit area here.
    The search icon sits at the same coordinates in both header states, so
    its hit area stays live after the collapse. The logo is two separate
    elements - the wordmark before the collapse, the square mark after - so
@@ -248,29 +192,30 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 
   <div id="page">
 
-    <!-- ===== intro: composition frames 0-168, at scroll 0 ===== -->
+    <!-- ===== intro: plays once on load. Only the title and the doc/book
+         tabs rise - the breadcrumb above them is a plain static crop ===== -->
     <div id="intro">
-      <div class="m rise" style="--l:160;--t:153;--w:199;--h:24;--d:0.200s;"><img src="arte-document/breadcrumb.png" alt=""></div>
-      <div class="m rise" style="--l:160;--t:253;--w:447;--h:69;--d:0.467s;"><img src="arte-document/title.png" alt=""></div>
-      <div class="m rise" style="--l:160;--t:377;--w:797;--h:80;--d:0.867s;"><img src="arte-document/tab-doc.png" alt=""></div>
-      <div class="m rise" style="--l:963;--t:377;--w:798;--h:80;--d:1.067s;"><img src="arte-document/tab-book.png" alt=""></div>
+      <div class="m" style="--l:160;--t:153;--w:199;--h:24"><img src="arte-document/breadcrumb.png" alt=""></div>
+      <div class="m rise" style="--l:160;--t:253;--w:447;--h:69;--d:0s"><img src="arte-document/title.png" alt=""></div>
+      <div class="m rise" style="--l:160;--t:377;--w:797;--h:80;--d:.3s"><img src="arte-document/tab-doc.png" alt=""></div>
+      <div class="m rise" style="--l:963;--t:377;--w:798;--h:80;--d:.45s"><img src="arte-document/tab-book.png" alt=""></div>
     </div>
 
-    <!-- ===== everything from "아카이브" down: no per-element stagger,
-         just one fade-in after the intro above has settled (each element
-         is already in its resting/"in" state, so the group appears as a
-         single unit rather than animating piece by piece) ===== -->
-    <div id="docContent" class="doc-fade">
-      <div class="m rise in" style="--l:160;--t:553;--w:196;--h:51;"><img src="arte-document/sec-heading.png" alt=""></div>
-      <div class="m rise in" style="--l:1149;--t:581;--w:613;--h:30;"><img src="arte-document/sec-desc.png" alt=""></div>
-      <div class="rule in" style="--l:160;--t:624;--w:1600;--h:4;"></div>
-      <div class="m rise in" style="--l:160;--t:645;--w:90;--h:32;"><img src="arte-document/fl-label1.png" alt=""></div>
-      <div class="m rise in" style="--l:160;--t:689;--w:312;--h:51;"><img src="arte-document/fl-select.png" alt=""></div>
-      <div class="m rise in" style="--l:160;--t:752;--w:312;--h:51;"><img src="arte-document/fl-search.png" alt=""></div>
-      <div class="m rise in" style="--l:160;--t:815;--w:312;--h:50;"><img src="arte-document/fl-info.png" alt=""></div>
-      <div class="rule in" style="--l:160;--t:901;--w:312;--h:4;"></div>
-      <div class="m rise in" style="--l:160;--t:925;--w:60;--h:32;"><img src="arte-document/fl-label2.png" alt=""></div>
-      <div class="m rise short in" style="--l:160;--t:957;--w:312;--h:247;"><img src="arte-document/fl-chips.png" alt=""></div>
+    <!-- ===== everything from "아카이브" down: a single static block that
+         fades in as one whole once the intro above has settled - no
+         individual element inside it (including the sub-heading's own
+         rule) gets its own motion ===== -->
+    <div id="docContent">
+      <div class="m" style="--l:160;--t:553;--w:196;--h:51"><img src="arte-document/sec-heading.png" alt=""></div>
+      <div class="m" style="--l:1149;--t:581;--w:613;--h:30"><img src="arte-document/sec-desc.png" alt=""></div>
+      <div class="rule" style="--l:160;--t:624;--w:1600;--h:4"></div>
+      <div class="m" style="--l:160;--t:645;--w:90;--h:32"><img src="arte-document/fl-label1.png" alt=""></div>
+      <div class="m" style="--l:160;--t:689;--w:312;--h:51"><img src="arte-document/fl-select.png" alt=""></div>
+      <div class="m" style="--l:160;--t:752;--w:312;--h:51"><img src="arte-document/fl-search.png" alt=""></div>
+      <div class="m" style="--l:160;--t:815;--w:312;--h:50"><img src="arte-document/fl-info.png" alt=""></div>
+      <div class="rule" style="--l:160;--t:901;--w:312;--h:4"></div>
+      <div class="m" style="--l:160;--t:925;--w:60;--h:32"><img src="arte-document/fl-label2.png" alt=""></div>
+      <div class="m" style="--l:160;--t:957;--w:312;--h:247"><img src="arte-document/fl-chips.png" alt=""></div>
       <!-- "list" column: category tabs / notice / count row / 2 cards -
            real text/markup matching the current Figma design exactly -->
       <div class="doclist">
@@ -358,18 +303,18 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
         </div>
       </div>
 
-      <div class="rule in" style="--l:160;--t:1232;--w:312;--h:4;"></div>
-      <div class="m rise in" style="--l:160;--t:1272;--w:312;--h:40;"><img src="arte-document/fl-row1.png" alt=""></div>
-      <div class="rule in" style="--l:160;--t:1330;--w:312;--h:1;"></div>
-      <div class="m rise in" style="--l:160;--t:1367;--w:312;--h:40;"><img src="arte-document/fl-row2.png" alt=""></div>
-      <div class="rule in" style="--l:160;--t:1425;--w:312;--h:1;"></div>
-      <div class="m rise in" style="--l:160;--t:1462;--w:312;--h:40;"><img src="arte-document/fl-row3.png" alt=""></div>
-      <div class="rule in" style="--l:160;--t:1520;--w:312;--h:1;"></div>
-      <div class="m rise in" style="--l:160;--t:1557;--w:312;--h:40;"><img src="arte-document/fl-row4.png" alt=""></div>
-      <div class="rule in" style="--l:160;--t:1615;--w:312;--h:1;"></div>
-      <div class="m rise in" style="--l:160;--t:1652;--w:60;--h:32;"><img src="arte-document/fl-label3.png" alt=""></div>
-      <div class="m rise in" style="--l:160;--t:1688;--w:312;--h:51;"><img src="arte-document/fl-years.png" alt=""></div>
-      <div class="rule in" style="--l:160;--t:1763;--w:312;--h:1;"></div>
+      <div class="rule" style="--l:160;--t:1232;--w:312;--h:4"></div>
+      <div class="m" style="--l:160;--t:1272;--w:312;--h:40"><img src="arte-document/fl-row1.png" alt=""></div>
+      <div class="rule" style="--l:160;--t:1330;--w:312;--h:1"></div>
+      <div class="m" style="--l:160;--t:1367;--w:312;--h:40"><img src="arte-document/fl-row2.png" alt=""></div>
+      <div class="rule" style="--l:160;--t:1425;--w:312;--h:1"></div>
+      <div class="m" style="--l:160;--t:1462;--w:312;--h:40"><img src="arte-document/fl-row3.png" alt=""></div>
+      <div class="rule" style="--l:160;--t:1520;--w:312;--h:1"></div>
+      <div class="m" style="--l:160;--t:1557;--w:312;--h:40"><img src="arte-document/fl-row4.png" alt=""></div>
+      <div class="rule" style="--l:160;--t:1615;--w:312;--h:1"></div>
+      <div class="m" style="--l:160;--t:1652;--w:60;--h:32"><img src="arte-document/fl-label3.png" alt=""></div>
+      <div class="m" style="--l:160;--t:1688;--w:312;--h:51"><img src="arte-document/fl-years.png" alt=""></div>
+      <div class="rule" style="--l:160;--t:1763;--w:312;--h:1"></div>
     </div>
 
   </div>
@@ -378,6 +323,7 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 <div id="hint">스크롤하면 콘텐츠가 등장합니다</div>
 <div id="ui"><button id="replay">↻ 처음부터 다시 보기</button></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
 <script>
 const root = document.getElementById('root');
 
@@ -396,15 +342,24 @@ function fit() {
 let scale = fit();
 addEventListener('resize', () => { scale = fit(); });
 
-/* ---- the intro ------------------------------------------------------
-   Every element carries its own transition-delay, taken from the frame it
-   started on in the composition, so one class switch is enough. */
-const introEls = document.querySelectorAll('#intro .m, #intro .chip, #intro .rule, #docContent');
-function playIntro() {
-  introEls.forEach(e => e.classList.remove('in'));
-  void document.getElementById('page').offsetHeight;   // flush, so the reset is not animated away
-  requestAnimationFrame(() => introEls.forEach(e => e.classList.add('in')));
-}
+/* read one of an element's own --custom-properties as a plain number */
+const num = (el, name, fallback = 0) => {
+  const v = getComputedStyle(el).getPropertyValue(name).trim();
+  return v ? parseFloat(v) : fallback;
+};
+
+/* ---- the intro: a GSAP timeline that plays on load. Only the title and
+   the doc/book tabs rise; #docContent then fades in as one block once
+   they've settled - nothing inside it animates on its own. ------------ */
+const introTl = gsap.timeline({ paused: true });
+document.querySelectorAll('#intro .rise').forEach((el) => {
+  const img = el.querySelector('img');
+  introTl.fromTo(img, { y: num(el, '--h'), opacity: 0 },
+    { y: 0, opacity: 1, duration: .933, ease: 'expo.out' }, num(el, '--d'));
+});
+introTl.fromTo('#docContent', { opacity: 0 }, { opacity: 1, duration: .8, ease: 'power2.out' }, 2.0);
+
+function playIntro() { introTl.restart(); }
 playIntro();
 document.getElementById('replay').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -15,6 +15,26 @@
       i   the render itself, offset so the crop lands in the mask,
            and the thing that actually moves
 
+   Motion vocabulary, all opt-in via a class on the .m (or standalone for
+   .olb/.ln):
+     .rise   text: rises from below while fading in
+     .zoom   images: scale 120% -> 100% while fading in
+     .fade   plain crossfade, no movement
+     .unf    a horizontal wipe open from the left edge - used for the
+             keyword-result category tabs, which unfold left to right
+             one after another instead of rising like normal text
+     .olb    a 1px rule drawn around a box, one edge at a time from the
+             top-left corner, running anti-clockwise (used for the result
+             card outlines)
+     .ln     one drawn rule (no box), used where .olb would be overkill:
+             the search bar's underline and the active category tab's
+             underline, both drawn left to right
+
+   GSAP's ScrollTrigger is what flips the `.in` class that each of these
+   keys its transition off of - see the bottom of the page script. It
+   replaces a manual IntersectionObserver, and a `gsap.timeline()` plays
+   the on-load AI panel sequence instead of chained setTimeouts.
+
    Page landmarks: header 0-133 (pinned; the 32px masthead rolls up on
    scroll and it settles at 101), search block 133-335, AI panel at y335
    (425px while loading, 815px once answered), card rows y666 / y832,
@@ -53,12 +73,31 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 .fade>i{opacity:0;transition:opacity var(--dur,1.067s) ease-out;transition-delay:var(--d,0s)}
 .fade.in>i{opacity:1}
 
+/* ---- horizontal unfold (keyword-result category tabs) ------------- */
+/* Each tab is its own window; they wipe open left to right in sequence
+   rather than rising, so the row reads as tabs unfolding one after
+   another instead of a single block of text. */
+.unf{clip-path:inset(0 100% 0 0);
+     transition:clip-path .4s cubic-bezier(.33,1,.68,1);transition-delay:var(--d,0s)}
+.unf.in{clip-path:inset(0 0 0 0)}
+
+/* ---- single drawn line (search-bar rule, category underline) ------ */
+/* Same pen-drawing idea as .ol below, just one edge: a flat rule that
+   grows from its left end instead of fading or rising in. */
+.ln{position:absolute;background:rgba(0,0,0,.5);pointer-events:none;
+    top:calc(var(--t)*1px);left:calc(var(--l)*1px);
+    width:calc(var(--w)*1px);height:calc(var(--h)*1px);
+    clip-path:inset(0 100% 0 0);
+    transition:clip-path linear;transition-duration:var(--dur,.5s);transition-delay:var(--d,0s)}
+.ln.in{clip-path:inset(0 0 0 0)}
+.ln.solid{background:#000}
+
 /* ---- the AI panel ------------------------------------------------ */
 /* White with a 4px rule around it, so the unfold reads on the border
-   rather than on a fill. */
+   rather than on a fill. Height is driven by a GSAP timeline (playLoad),
+   not a CSS transition. */
 #panel{position:absolute;top:335px;left:160px;width:1600px;height:0;
-       border:4px solid #000;background:#fff;
-       transition:height .867s cubic-bezier(.16,1,.3,1)}
+       border:4px solid rgba(0,0,0,.5);background:#fff}
 #loading{transition:opacity .6s ease-out}
 #loading.gone{opacity:0}
 /* everything under the panel rides down as it grows to fit the answer */
@@ -170,8 +209,12 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 
   <div id="page">
 
-    <!-- the search block travels with the page and passes behind the header -->
-    <div class="m" style="--l:0;--t:133;--w:1920;--h:202"><i></i></div>
+    <!-- ===== top search bar: title rises, icon zooms, rule draws L-R ===== -->
+    <div id="search">
+      <div class="m rise" style="--l:184;--t:201;--w:597;--h:50;--d:0s"><i></i></div>
+      <div class="m zoom" style="--l:1672;--t:194;--w:64;--h:64;--d:0.100s"><i></i></div>
+      <div class="ln" style="--l:160;--t:273;--w:1600;--h:6;--d:0.200s;--dur:1.143s"></div>
+    </div>
 
     <div id="panel"></div>
 
@@ -187,7 +230,14 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
       <div class="m fade" style="--l:224;--t:399;--w:1472;--h:44;--d:4.067s;--dur:0.600s"><i></i></div>
       <div class="m rise" style="--l:224;--t:471;--w:1472;--h:33;--d:4.267s"><i></i></div>
       <div class="m rise" style="--l:224;--t:504;--w:1472;--h:33;--d:4.467s"><i></i></div>
-      <div class="m rise" style="--l:224;--t:577;--w:340;--h:49;--d:4.733s"><i></i></div>
+      <!-- category filter inside the AI panel: text rises, the active tab's
+           underline is its own line and draws left to right -->
+      <div class="m rise" style="--l:224;--t:577;--w:39;--h:39;--d:4.733s"><i></i></div>
+      <div class="ln solid" style="--l:224;--t:616;--w:39;--h:4;--d:4.850s;--dur:0.030s"></div>
+      <div class="m rise" style="--l:286;--t:577;--w:82;--h:45;--d:4.793s"><i></i></div>
+      <div class="m rise" style="--l:391;--t:577;--w:39;--h:45;--d:4.853s"><i></i></div>
+      <div class="m rise" style="--l:453;--t:577;--w:39;--h:45;--d:4.913s"><i></i></div>
+      <div class="m rise" style="--l:515;--t:577;--w:39;--h:45;--d:4.973s"><i></i></div>
 
       <!-- Card 1 -->
       <div class="m zoom" style="--l:225;--t:667;--w:108;--h:152;--d:5.067s"><i></i></div>
@@ -223,7 +273,13 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
       <!-- already on the page while the answer is still a skeleton -->
       <div id="kw">
         <div class="m rise" style="--l:160;--t:1268;--w:1600;--h:62;--d:1.200s"><i></i></div>
-        <div class="m rise" style="--l:156;--t:1364;--w:910;--h:65;--d:1.533s"><i></i></div>
+        <!-- category tabs: each one unfolds left to right, in sequence -->
+        <div class="m unf" style="--l:156;--t:1364;--w:132;--h:65;--d:1.533s"><i></i></div>
+        <div class="m unf" style="--l:288;--t:1364;--w:132;--h:65;--d:1.623s"><i></i></div>
+        <div class="m unf" style="--l:420;--t:1364;--w:132;--h:65;--d:1.713s"><i></i></div>
+        <div class="m unf" style="--l:552;--t:1364;--w:132;--h:65;--d:1.803s"><i></i></div>
+        <div class="m unf" style="--l:684;--t:1364;--w:132;--h:65;--d:1.893s"><i></i></div>
+        <div class="m unf" style="--l:816;--t:1364;--w:250;--h:65;--d:1.983s"><i></i></div>
       </div>
 
       <!-- ===== these wait for the viewport ===== -->
@@ -268,7 +324,11 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 <div id="hint">스크롤하면 콘텐츠가 등장합니다</div>
 <div id="ui"><button id="replay">↻ 로딩부터 다시 보기</button></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
+gsap.registerPlugin(ScrollTrigger);
+
 const root=document.getElementById('root');
 const panel=document.getElementById('panel');
 const loading=document.getElementById('loading');
@@ -288,33 +348,33 @@ function fit(){
   return s;
 }
 let scale=fit();
-addEventListener('resize',()=>{scale=fit();});
+addEventListener('resize',()=>{scale=fit();ScrollTrigger.refresh();});
 
 /* ---- the AI panel load sequence ------------------------------------
    Same beats the composition used, converted from frames at 30fps: the
    panel opens to the skeleton height, holds, then grows to fit the answer
-   while everything underneath rides down with it. */
-let timers=[];
+   while everything underneath rides down with it. A GSAP timeline drives
+   the panel's height directly, so nothing here still relies on the CSS
+   `transition` property. */
+let tl;
 function playLoad(){
-  timers.forEach(clearTimeout); timers=[];
+  if(tl) tl.kill();
   loading.classList.remove('gone');
   below.classList.remove('settled');
-  panel.style.transition='none';
-  panel.style.height='0px';
-  document.querySelectorAll('#loading .m,#answer .m,#kw .m').forEach(e=>e.classList.remove('in'));
+  gsap.set(panel,{height:0});
+  document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#kw .m,#kw .unf')
+    .forEach(e=>e.classList.remove('in'));
   document.querySelectorAll('#answer .olb').forEach(e=>e.classList.remove('in'));
-  void panel.offsetHeight;                    // flush, so the reset is not animated away
 
-  const at=(f,fn)=>timers.push(setTimeout(fn,f/30*1000));
-  at(8,()=>{panel.style.transition='height .867s cubic-bezier(.16,1,.3,1)';
-             panel.style.height='425px';});
-  at(108,()=>loading.classList.add('gone'));
-  at(118,()=>{panel.style.transition='height .933s cubic-bezier(.16,1,.3,1)';
-               panel.style.height='815px';
-               below.classList.add('settled');});
+  tl=gsap.timeline()
+    .to(panel,{height:425,duration:.867,ease:'expo.out'},8/30)
+    .call(()=>loading.classList.add('gone'),null,108/30)
+    .to(panel,{height:815,duration:.933,ease:'expo.out'},118/30)
+    .call(()=>below.classList.add('settled'),null,118/30);
+
   // every element carries its own transition-delay, so one class is enough
   requestAnimationFrame(()=>{
-    document.querySelectorAll('#loading .m,#answer .m,#answer .olb,#kw .m')
+    document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#answer .olb,#kw .m,#kw .unf')
       .forEach(e=>e.classList.add('in'));
   });
 }
@@ -322,22 +382,17 @@ playLoad();
 document.getElementById('replay').addEventListener('click',playLoad);
 
 /* ---- viewport-triggered reveals ------------------------------------ */
-/* The margin holds each reveal back until the element is properly inside
-   the viewport rather than clipping its bottom edge. */
-const pending=new Set(document.querySelectorAll('[data-scroll] .m,[data-scroll] .olb'));
-const reveal=el=>{el.classList.add('in');pending.delete(el);io.unobserve(el);};
-const io=new IntersectionObserver(es=>{for(const e of es) if(e.isIntersecting) reveal(e.target);},
-  {rootMargin:'0px 0px -12% 0px'});
-pending.forEach(e=>io.observe(e));
-
-/* That margin means the last elements on the page sit inside it while the
-   scroll is already at the bottom, with nowhere further to go - they would
-   never fire. Once the page bottom is reached, release whatever is left. */
-function sweepBottom(){
-  if(!pending.size) return;
-  if(window.scrollY+window.innerHeight<document.documentElement.scrollHeight-2) return;
-  [...pending].forEach(reveal);
-}
+/* ScrollTrigger's own `toggleClass` fires the same `.in` switch the CSS
+   transitions key off of, once per element, whenever it's crossed - no
+   manual bottom-of-page sweep needed the way IntersectionObserver required. */
+document.querySelectorAll('[data-scroll] .m,[data-scroll] .olb').forEach(el=>{
+  ScrollTrigger.create({
+    trigger:el,
+    start:'top 88%',
+    once:true,
+    toggleClass:{targets:el,className:'in'}
+  });
+});
 
 /* ---- header collapse ----------------------------------------------- */
 const hint=document.getElementById('hint');
@@ -345,7 +400,6 @@ function onScroll(){
   const y=window.scrollY/scale;               // back into page coordinates
   root.classList.toggle('scrolled',y>80);
   if(y>40) hint.classList.add('gone');
-  sweepBottom();
 }
 addEventListener('scroll',onScroll,{passive:true});
 onScroll();
