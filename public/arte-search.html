@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>arte 검색 결과 · 스크롤 모션 미리보기</title>
+<style>
+/* ------------------------------------------------------------------
+   A scroll-driven port of the `arte-search` Remotion composition.
+
+   Both states of the page are single 1920px-wide renders exported from
+   Figma, and every animated element is a window onto one of them:
+
+     .m   a mask fixed at the element's page coordinates
+      i   the render itself, offset so the crop lands in the mask,
+           and the thing that actually moves
+
+   Motion vocabulary, all opt-in via a class on the .m (or standalone for
+   .olb/.ln):
+     .rise   text: rises from below while fading in
+     .zoom   images: scale 120% -> 100% while fading in
+     .fade   plain crossfade, no movement
+     .unf    a horizontal wipe open from the left edge - used for the
+             keyword-result category tabs, which unfold left to right
+             one after another instead of rising like normal text
+     .olb    a 1px rule drawn around a box, one edge at a time from the
+             top-left corner, running anti-clockwise (used for the result
+             card outlines)
+     .ln     one drawn rule (no box), used where .olb would be overkill:
+             the search bar's underline and the active category tab's
+             underline, both drawn left to right
+
+   GSAP's ScrollTrigger is what flips the `.in` class that each of these
+   keys its transition off of - see the bottom of the page script. It
+   replaces a manual IntersectionObserver, and a `gsap.timeline()` plays
+   the on-load AI panel sequence instead of chained setTimeouts.
+
+   Page landmarks: header 0-133 (pinned; the 32px masthead rolls up on
+   scroll and it settles at 101), search block 133-335, AI panel at y335
+   (425px while loading, 815px once answered), card rows y666 / y832,
+   "20개 자료 모두 보기" y1026, 키워드 검색 결과 y1268, then 문서·도서
+   y1470, 영상 y2012, 추천 y2469, 지역 y2908.
+
+   The AI panel plays on load, on the timeline the composition used
+   (frame / 30 = seconds). The keyword results are not what it waits on -
+   they are already there while the answer is a skeleton - so they reveal
+   on that same beat, 390px higher, and are carried down as the panel
+   grows. Everything below them waits for the viewport.
+   ------------------------------------------------------------------ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:#e9e9ec}
+body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo",sans-serif;color:#111;overflow-x:hidden}
+#root{width:1920px;margin:0 auto}
+#stick{position:sticky;top:0;height:0;z-index:50;overflow:visible}
+#page{position:relative;width:1920px;height:3332px;background:#fff}
+
+/* ---- crop windows ------------------------------------------------ */
+.m{position:absolute;overflow:hidden;top:calc(var(--t)*1px);left:calc(var(--l)*1px);
+   width:calc(var(--w)*1px);height:calc(var(--h)*1px)}
+.m>i{position:absolute;top:0;left:0;width:100%;height:100%;
+     background-image:url(arte-search/page-loaded.png);background-size:1920px auto;
+     background-repeat:no-repeat;
+     background-position:calc(var(--l)*-1px) calc(var(--t)*-1px)}
+.m.lo>i{background-image:url(arte-search/page-loading.png)}
+.rise>i{transform:translateY(calc(var(--h)*1px));opacity:0;
+        transition:transform .733s cubic-bezier(.16,1,.3,1),opacity .467s ease-out;
+        transition-delay:var(--d,0s)}
+.rise.in>i{transform:none;opacity:1}
+.zoom>i{transform:scale(1.2);opacity:0;
+        transition:transform 1.467s cubic-bezier(.16,1,.3,1),opacity .6s ease-out;
+        transition-delay:var(--d,0s)}
+.zoom.in>i{transform:none;opacity:1}
+.fade>i{opacity:0;transition:opacity var(--dur,1.067s) ease-out;transition-delay:var(--d,0s)}
+.fade.in>i{opacity:1}
+
+/* ---- horizontal unfold (keyword-result category tabs) ------------- */
+/* Each tab is its own window; they wipe open left to right in sequence
+   rather than rising, so the row reads as tabs unfolding one after
+   another instead of a single block of text. */
+.unf{clip-path:inset(0 100% 0 0);
+     transition:clip-path .4s cubic-bezier(.33,1,.68,1);transition-delay:var(--d,0s)}
+.unf.in{clip-path:inset(0 0 0 0)}
+
+/* ---- single drawn line (search-bar rule, category underline) ------ */
+/* Same pen-drawing idea as .ol below, just one edge: a flat rule that
+   grows from its left end instead of fading or rising in. */
+.ln{position:absolute;background:rgba(0,0,0,.5);pointer-events:none;
+    top:calc(var(--t)*1px);left:calc(var(--l)*1px);
+    width:calc(var(--w)*1px);height:calc(var(--h)*1px);
+    clip-path:inset(0 100% 0 0);
+    transition:clip-path linear;transition-duration:var(--dur,.5s);transition-delay:var(--d,0s)}
+.ln.in{clip-path:inset(0 0 0 0)}
+.ln.solid{background:#000}
+
+/* ---- the AI panel ------------------------------------------------ */
+/* White with a 4px rule around it, so the unfold reads on the border
+   rather than on a fill. Height is driven by a GSAP timeline (playLoad),
+   not a CSS transition. */
+#panel{position:absolute;top:335px;left:160px;width:1600px;height:0;
+       border:4px solid rgba(0,0,0,.5);background:#fff}
+#loading{transition:opacity .6s ease-out}
+#loading.gone{opacity:0}
+/* everything under the panel rides down as it grows to fit the answer */
+#below{position:absolute;top:0;left:0;width:1920px;height:3332px;
+       transform:translateY(-390px);
+       transition:transform .933s cubic-bezier(.16,1,.3,1)}
+#below.settled{transform:none}
+
+/* ---- card outlines ----------------------------------------------- */
+/* Four 1px rules drawn back to back from the top-left corner, running
+   anti-clockwise, each timed to its own edge length so the pen keeps a
+   constant speed. These cards are 730x154, so the long edges take most
+   of the trip. */
+.olb{position:absolute;top:calc(var(--t)*1px);left:calc(var(--l)*1px);
+     width:calc(var(--w)*1px);height:calc(var(--h)*1px);pointer-events:none}
+.ol{position:absolute;background:#000}
+.e1{left:0;top:0;width:1px;height:100%;clip-path:inset(0 0 100% 0);
+    transition:clip-path .110s linear;transition-delay:var(--d,0s)}
+.e2{left:0;bottom:0;width:100%;height:1px;clip-path:inset(0 100% 0 0);
+    transition:clip-path .523s linear;transition-delay:calc(var(--d,0s) + .110s)}
+.e3{right:0;top:0;width:1px;height:100%;clip-path:inset(100% 0 0 0);
+    transition:clip-path .110s linear;transition-delay:calc(var(--d,0s) + .633s)}
+.e4{left:0;top:0;width:100%;height:1px;clip-path:inset(0 0 0 100%);
+    transition:clip-path .523s linear;transition-delay:calc(var(--d,0s) + .743s)}
+.olb.in .ol{clip-path:inset(0 0 0 0)}
+
+/* ---- the pinned header ------------------------------------------- */
+/* 133px, and it stays 133px. The masthead strip and the two icons on the
+   right are identical in both states, so they are drawn once and never
+   move. On the first scroll the "arte 라이브러리" wordmark is eaten from
+   the right as its window narrows to the 51px the mark occupies, the blue
+   plate carrying that mark fades in behind it, and the nav links and the
+   account pill go. The narrowing window is what carries the wordmark
+   away, so the two read as one move rather than a crossfade sitting on
+   top of a resize. */
+#hdr{position:absolute;top:0;left:0;width:1920px;height:133px;overflow:hidden;background:#fff}
+#hdr i{position:absolute;top:0;left:0;width:1920px;height:3332px;
+       background-image:url(arte-search/page-loaded.png);
+       background-size:1920px auto;background-repeat:no-repeat}
+#hdr .mast{position:absolute;top:0;left:0;width:1920px;height:32px;overflow:hidden}
+#hdr .mast i{background-position:0 0}
+#hdr .icons{position:absolute;top:32px;left:1685px;width:110px;height:101px;overflow:hidden}
+#hdr .icons i{background-position:-1685px -32px}
+#hdr .nav{position:absolute;top:32px;left:450px;width:1235px;height:101px;overflow:hidden;
+          transition:opacity .6s ease-out}
+#hdr .nav i{background-position:-450px -32px}
+#hdr .plate{position:absolute;top:56px;left:150px;width:51px;height:51px;overflow:hidden;
+            opacity:0;transition:opacity .733s ease-out .467s}
+#hdr .plate i{height:133px;background-image:url(arte-search/header-scrolled.png);
+              background-position:-150px -56px}
+#hdr .word{position:absolute;top:56px;left:150px;width:209px;height:51px;overflow:hidden;
+           transition:width 1.067s cubic-bezier(.33,1,.68,1)}
+#hdr .wi{position:absolute;top:0;left:0;width:209px;height:51px;overflow:hidden;
+         transition:opacity .733s ease-out}
+#hdr .wi i{background-position:-150px -56px}
+#root.scrolled #hdr .nav{opacity:0}
+#root.scrolled #hdr .plate{opacity:1}
+#root.scrolled #hdr .word{width:51px}
+#root.scrolled #hdr .wi{opacity:0}
+
+/* The wordmark links home. Its hit area is the same box the wordmark window
+   occupies, so it narrows to the plate as the header collapses and stays on
+   whatever is actually showing.
+
+   Two of the nav items link out. Each hit area is that item's own flex box
+   in the 40px-tall menu row - 문서·도서 at x459 w170, 지역별 정보 at x873
+   w190 - and the rule on hover spans just the label, which sits 40px inside
+   the box either side. All hrefs are relative, so they resolve the same over
+   file:// and over the dev server. */
+#hdr .logolink{position:absolute;left:150px;top:56px;width:209px;height:51px;
+  display:block;cursor:pointer;
+  transition:width 1.067s cubic-bezier(.33,1,.68,1)}
+#root.scrolled #hdr .logolink{width:51px}
+#hdr .navlink{position:absolute;top:62px;height:40px;display:block;cursor:pointer;
+  left:calc(var(--x)*1px);width:calc(var(--w)*1px)}
+#hdr .navlink b{position:absolute;left:40px;right:40px;bottom:1px;height:2px;
+  background:#000;transform:scaleX(0);transform-origin:left center;
+  transition:transform .28s cubic-bezier(.33,1,.68,1)}
+#hdr .navlink:hover b{transform:scaleX(1)}
+/* the nav is gone once collapsed, so the hit area has to go with it */
+#root.scrolled #hdr .navlink{opacity:0;pointer-events:none}
+
+/* ---- viewer chrome ----------------------------------------------- */
+#ui{position:fixed;right:18px;bottom:18px;z-index:200}
+#ui button{font:500 13px/1 inherit;color:#fff;background:rgba(17,17,17,.86);border:0;
+  border-radius:999px;padding:11px 16px;cursor:pointer;backdrop-filter:blur(6px)}
+#ui button:hover{background:#ff2268}
+#hint{position:fixed;left:50%;bottom:22px;translate:-50% 0;z-index:200;
+  font:500 13px/1 inherit;color:#fff;background:rgba(17,17,17,.8);
+  border-radius:999px;padding:11px 18px;transition:opacity .4s ease-out}
+#hint.gone{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="root">
+  <div id="stick">
+    <div id="hdr">
+      <div class="mast"><i></i></div>
+      <div class="icons"><i></i></div>
+      <div class="nav"><i></i></div>
+      <div class="plate"><i></i></div>
+      <div class="word"><div class="wi"><i></i></div></div>
+      <a class="navlink" style="--x:459;--w:170" href="arte-document.html" title="문서·도서"><b></b></a>
+      <a class="navlink" style="--x:873;--w:190" href="arte-location.html" title="지역별 정보"><b></b></a>
+      <a class="logolink" href="arte-main.html" title="arte 라이브러리"></a>
+    </div>
+  </div>
+
+  <div id="page">
+
+    <!-- ===== top search bar: title rises, icon zooms, rule draws L-R ===== -->
+    <div id="search">
+      <div class="m rise" style="--l:184;--t:201;--w:597;--h:50;--d:0s"><i></i></div>
+      <div class="m zoom" style="--l:1672;--t:194;--w:64;--h:64;--d:0.100s"><i></i></div>
+      <div class="ln" style="--l:160;--t:273;--w:1600;--h:6;--d:0.200s;--dur:1.143s"></div>
+    </div>
+
+    <div id="panel"></div>
+
+    <!-- ===== AI panel, loading state ===== -->
+    <div id="loading">
+      <div class="m rise lo" style="--l:224;--t:399;--w:1472;--h:44;--d:0.667s"><i></i></div>
+      <div class="m rise lo" style="--l:224;--t:471;--w:1472;--h:33;--d:0.933s"><i></i></div>
+      <div class="m fade lo" style="--l:224;--t:544;--w:1472;--h:152;--d:1.600s;--dur:1.067s"><i></i></div>
+    </div>
+
+    <!-- ===== AI panel, answered ===== -->
+    <div id="answer">
+      <div class="m fade" style="--l:224;--t:399;--w:1472;--h:44;--d:4.067s;--dur:0.600s"><i></i></div>
+      <div class="m rise" style="--l:224;--t:471;--w:1472;--h:33;--d:4.267s"><i></i></div>
+      <div class="m rise" style="--l:224;--t:504;--w:1472;--h:33;--d:4.467s"><i></i></div>
+      <!-- category filter inside the AI panel: text rises, the active tab's
+           underline is its own line and draws left to right -->
+      <div class="m rise" style="--l:224;--t:577;--w:39;--h:39;--d:4.733s"><i></i></div>
+      <div class="ln solid" style="--l:224;--t:616;--w:39;--h:4;--d:4.850s;--dur:0.030s"></div>
+      <div class="m rise" style="--l:286;--t:577;--w:82;--h:45;--d:4.793s"><i></i></div>
+      <div class="m rise" style="--l:391;--t:577;--w:39;--h:45;--d:4.853s"><i></i></div>
+      <div class="m rise" style="--l:453;--t:577;--w:39;--h:45;--d:4.913s"><i></i></div>
+      <div class="m rise" style="--l:515;--t:577;--w:39;--h:45;--d:4.973s"><i></i></div>
+
+      <!-- Card 1 -->
+      <div class="m zoom" style="--l:225;--t:667;--w:108;--h:152;--d:5.067s"><i></i></div>
+      <div class="olb" style="--l:224;--t:666;--w:730;--h:154;--d:5.333s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:357;--t:687;--w:572;--h:33;--d:5.600s"><i></i></div>
+      <div class="m rise" style="--l:357;--t:740;--w:142;--h:27;--d:5.767s"><i></i></div>
+      <div class="m rise" style="--l:357;--t:775;--w:572;--h:24;--d:5.934s"><i></i></div>
+
+      <!-- Card 2 -->
+      <div class="m zoom" style="--l:967;--t:667;--w:108;--h:152;--d:5.533s"><i></i></div>
+      <div class="olb" style="--l:966;--t:666;--w:730;--h:154;--d:5.800s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:1099;--t:687;--w:572;--h:33;--d:6.067s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:740;--w:142;--h:27;--d:6.234s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:775;--w:572;--h:24;--d:6.401s"><i></i></div>
+
+      <!-- Card 3 -->
+      <div class="m zoom" style="--l:225;--t:833;--w:108;--h:152;--d:6.000s"><i></i></div>
+      <div class="olb" style="--l:224;--t:832;--w:730;--h:154;--d:6.267s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:353;--t:853;--w:406;--h:33;--d:6.533s"><i></i></div>
+      <div class="m rise" style="--l:353;--t:906;--w:109;--h:27;--d:6.700s"><i></i></div>
+      <div class="m rise" style="--l:353;--t:941;--w:580;--h:24;--d:6.867s"><i></i></div>
+
+      <!-- Card 4 -->
+      <div class="m zoom" style="--l:967;--t:833;--w:108;--h:152;--d:6.467s"><i></i></div>
+      <div class="olb" style="--l:966;--t:832;--w:730;--h:154;--d:6.733s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
+      <div class="m rise" style="--l:1099;--t:853;--w:406;--h:33;--d:7.000s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:917;--w:479;--h:24;--d:7.167s"><i></i></div>
+      <div class="m rise" style="--l:1099;--t:941;--w:479;--h:24;--d:7.334s"><i></i></div>
+      <div class="m rise" style="--l:224;--t:1026;--w:1472;--h:66;--d:7.533s"><i></i></div>
+    </div>
+
+    <div id="below">
+      <!-- already on the page while the answer is still a skeleton -->
+      <div id="kw">
+        <div class="m rise" style="--l:160;--t:1268;--w:1600;--h:62;--d:1.200s"><i></i></div>
+        <!-- category tabs: each one unfolds left to right, in sequence -->
+        <div class="m unf" style="--l:156;--t:1364;--w:132;--h:65;--d:1.533s"><i></i></div>
+        <div class="m unf" style="--l:288;--t:1364;--w:132;--h:65;--d:1.623s"><i></i></div>
+        <div class="m unf" style="--l:420;--t:1364;--w:132;--h:65;--d:1.713s"><i></i></div>
+        <div class="m unf" style="--l:552;--t:1364;--w:132;--h:65;--d:1.803s"><i></i></div>
+        <div class="m unf" style="--l:684;--t:1364;--w:132;--h:65;--d:1.893s"><i></i></div>
+        <div class="m unf" style="--l:816;--t:1364;--w:250;--h:65;--d:1.983s"><i></i></div>
+      </div>
+
+      <!-- ===== these wait for the viewport ===== -->
+      <div data-scroll>
+        <div class="m rise" style="--l:160;--t:1470;--w:1600;--h:60"><i></i></div>
+        <div class="m zoom" style="--l:160;--t:1567;--w:205;--h:320;--d:0.080s"><i></i></div>
+        <div class="m rise" style="--l:405;--t:1607;--w:1355;--h:18;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1653;--w:1355;--h:48;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1714;--w:1355;--h:17;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1763;--w:1355;--h:26;--d:0.551s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1793;--w:1355;--h:26;--d:0.718s"><i></i></div>
+      <div class="m rise" style="--l:405;--t:1824;--w:1355;--h:22;--d:0.885s"><i></i></div>
+
+        <div class="m rise" style="--l:160;--t:2012;--w:1600;--h:60"><i></i></div>
+        <div class="m zoom" style="--l:160;--t:2109;--w:420;--h:235;--d:0.080s"><i></i></div>
+        <div class="m rise" style="--l:620;--t:2136;--w:1140;--h:17;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:620;--t:2190;--w:1140;--h:36;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:620;--t:2244;--w:1140;--h:16;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:620;--t:2294;--w:1140;--h:21;--d:0.551s"><i></i></div>
+
+        <div class="m rise" style="--l:160;--t:2469;--w:1600;--h:60"><i></i></div>
+        <div class="m rise" style="--l:160;--t:2569;--w:1600;--h:17;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2623;--w:1600;--h:35;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2677;--w:1600;--h:16;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2727;--w:1600;--h:23;--d:0.551s"><i></i></div>
+      <div class="m rise" style="--l:160;--t:2757;--w:1600;--h:21;--d:0.718s"><i></i></div>
+
+        <div class="m rise" style="--l:160;--t:2908;--w:1600;--h:60"><i></i></div>
+        <div class="m zoom" style="--l:160;--t:3005;--w:419;--h:235;--d:0.080s"><i></i></div>
+        <div class="m rise" style="--l:619;--t:3008;--w:1141;--h:17;--d:0.050s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3062;--w:1141;--h:37;--d:0.217s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3116;--w:1141;--h:16;--d:0.384s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3166;--w:1141;--h:23;--d:0.551s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3196;--w:1141;--h:21;--d:0.718s"><i></i></div>
+      <div class="m rise" style="--l:619;--t:3226;--w:1141;--h:21;--d:0.885s"><i></i></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="hint">스크롤하면 콘텐츠가 등장합니다</div>
+<div id="ui"><button id="replay">↻ 로딩부터 다시 보기</button></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+const root=document.getElementById('root');
+const panel=document.getElementById('panel');
+const loading=document.getElementById('loading');
+const below=document.getElementById('below');
+
+/* The design is a fixed 1920px wide. Scale it down to fit narrower windows,
+   but never up - the page renders are 1x, so enlarging them only softens the
+   type.
+
+   This uses `zoom` rather than `transform: scale()` on purpose: zoom feeds
+   into layout, so the document scroll height follows on its own and the
+   sticky header still pins against the real viewport. A transform would
+   leave sticky resolving in unscaled space and the header would drift. */
+function fit(){
+  const s=Math.min(1,window.innerWidth/1920);
+  root.style.zoom=s;
+  return s;
+}
+let scale=fit();
+addEventListener('resize',()=>{scale=fit();ScrollTrigger.refresh();});
+
+/* ---- the AI panel load sequence ------------------------------------
+   Same beats the composition used, converted from frames at 30fps: the
+   panel opens to the skeleton height, holds, then grows to fit the answer
+   while everything underneath rides down with it. A GSAP timeline drives
+   the panel's height directly, so nothing here still relies on the CSS
+   `transition` property. */
+let tl;
+function playLoad(){
+  if(tl) tl.kill();
+  loading.classList.remove('gone');
+  below.classList.remove('settled');
+  gsap.set(panel,{height:0});
+  document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#kw .m,#kw .unf')
+    .forEach(e=>e.classList.remove('in'));
+  document.querySelectorAll('#answer .olb').forEach(e=>e.classList.remove('in'));
+
+  tl=gsap.timeline()
+    .to(panel,{height:425,duration:.867,ease:'expo.out'},8/30)
+    .call(()=>loading.classList.add('gone'),null,108/30)
+    .to(panel,{height:815,duration:.933,ease:'expo.out'},118/30)
+    .call(()=>below.classList.add('settled'),null,118/30);
+
+  // every element carries its own transition-delay, so one class is enough
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('#search .m,#search .ln,#loading .m,#answer .m,#answer .ln,#answer .olb,#kw .m,#kw .unf')
+      .forEach(e=>e.classList.add('in'));
+  });
+}
+playLoad();
+document.getElementById('replay').addEventListener('click',playLoad);
+
+/* ---- viewport-triggered reveals ------------------------------------ */
+/* ScrollTrigger's own `toggleClass` fires the same `.in` switch the CSS
+   transitions key off of, once per element, whenever it's crossed - no
+   manual bottom-of-page sweep needed the way IntersectionObserver required. */
+document.querySelectorAll('[data-scroll] .m,[data-scroll] .olb').forEach(el=>{
+  ScrollTrigger.create({
+    trigger:el,
+    start:'top 88%',
+    once:true,
+    toggleClass:{targets:el,className:'in'}
+  });
+});
+
+/* ---- header collapse ----------------------------------------------- */
+const hint=document.getElementById('hint');
+function onScroll(){
+  const y=window.scrollY/scale;               // back into page coordinates
+  root.classList.toggle('scrolled',y>80);
+  if(y>40) hint.classList.add('gone');
+}
+addEventListener('scroll',onScroll,{passive:true});
+onScroll();
+</script>
+</body>
+</html>

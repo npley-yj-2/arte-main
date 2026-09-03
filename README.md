@@ -5,8 +5,8 @@ Figma 시안을 기반으로 만든, 스크롤에 반응하는 정적 HTML 사�
 
 ## 구조
 
-- `public/` — 사이트 원본 (`arte-main-scroll.html`, `arte-document-scroll.html`, `arte-location-scroll.html`, `arte-search-scroll.html`)과 각 페이지가 쓰는 이미지 에셋
-- `docs/` — GitHub Pages로 배포되는 사본. `docs/index.html`은 `public/arte-main-scroll.html`과 항상 같은 내용으로 유지합니다.
+- `public/` — 사이트 원본 (`arte-main.html`, `arte-document.html`, `arte-location.html`, `arte-search.html`)과 각 페이지가 쓰는 이미지 에셋
+- `docs/` — GitHub Pages로 배포되는 사본. `docs/index.html`과 `docs/arte-main.html`은 둘 다 `public/arte-main.html`과 항상 같은 내용으로 유지합니다 (GitHub Pages가 요구하는 `index.html`과, 다른 페이지들이 링크하는 `arte-main.html` 파일명을 동시에 만족시키기 위함).
 
 ## 로컬에서 보기
 
