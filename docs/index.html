@@ -315,23 +315,24 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 
       <!-- 북 큐레이션: 검정 배경이 가운데에서 양쪽으로 열리고, "북 큐레이션"
            타이틀은 텍스트답게 아래에서 위로 올라온 뒤, 각 표지가 130%에서
-           100%로 줄어들며 등장하고, 제목·저자 캡션도 같은 방식으로 올라온다 -->
+           100%로 줄어들며 등장한다. 제목·저자 캡션은 별도로 올라오지 않고
+           표지와 함께 고정 노출된다 -->
       <div class="expand" style="--t:3483;--h:501;--cx:960;--l:160;--w:1600;--d:.133s"></div>
       <div class="m rise" style="--l:260;--t:3563;--w:199;--h:341;--d:.933s"><i></i></div>
 
       <!-- 각 표지는 문서 카드와 동일하게 "image 9994" 레이어가 249x341 전체를
-           채우고, 제목·저자는 그 아래쪽에 겹쳐지는 하나의 rise 블록이다 - 표지
-           이미지와 같은 --d를 써서 캡션이 표지와 동시에 등장한다 -->
+           채우고, 제목·저자는 그 아래쪽에 겹쳐지는 블록이다 - 캡션 자체는 더 이상
+           올라오지 않고, 표지의 scale 인터랙션에 실려 함께 등장한다 -->
       <div class="m zoom" style="--l:857;--t:3563;--w:249;--h:341;--d:1.133s"><i></i></div>
-      <div class="m rise" style="--l:857;--t:3734;--w:249;--h:170;--d:1.133s"><i></i></div>
+      <div class="m" style="--l:857;--t:3734;--w:249;--h:170"><i></i></div>
       <div class="olb" style="--l:857;--t:3563;--w:249;--h:341;--d:1.133s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
 
       <div class="m zoom" style="--l:1134;--t:3563;--w:249;--h:341;--d:1.4s"><i></i></div>
-      <div class="m rise" style="--l:1134;--t:3734;--w:249;--h:170;--d:1.4s"><i></i></div>
+      <div class="m" style="--l:1134;--t:3734;--w:249;--h:170"><i></i></div>
       <div class="olb" style="--l:1134;--t:3563;--w:249;--h:341;--d:1.4s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
 
       <div class="m zoom" style="--l:1411;--t:3563;--w:249;--h:341;--d:1.667s"><i></i></div>
-      <div class="m rise" style="--l:1411;--t:3734;--w:249;--h:170;--d:1.667s"><i></i></div>
+      <div class="m" style="--l:1411;--t:3734;--w:249;--h:170"><i></i></div>
       <div class="olb" style="--l:1411;--t:3563;--w:249;--h:341;--d:1.667s"><b class="ol e1"></b><b class="ol e2"></b><b class="ol e3"></b><b class="ol e4"></b></div>
 
       <!-- 이벤트·행사 -->
