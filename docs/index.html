@@ -105,11 +105,9 @@ body{font:400 14px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Apple SD G
 .e4{left:0;top:0;width:100%;height:1px;transform:scaleX(0);transform-origin:right}
 
 /* ---- the search bar: clicking it swaps in a filled-in example query,
-   then hands off to arte-search ------------------------------------ */
+   then hands off to arte-search - GSAP drives the swap, see the JS below */
 #searchbar{cursor:pointer;display:block}
-#searchbar .active{position:absolute;top:0;left:0;width:978px;height:98px;
-  opacity:0;transition:opacity .2s ease-out}
-#searchbar.clicked .active{opacity:1}
+#searchbar .active{position:absolute;top:0;left:0;width:978px;height:98px;opacity:0}
 
 /* ---- the pinned header ------------------------------------------- */
 /* 133px, always. The masthead strip and the icon pair on the right are
@@ -408,13 +406,14 @@ document.getElementById('replay').addEventListener('click', () => {
 /* ---- the search bar: swap to a filled-in example query, then hand off
    to arte-search ------------------------------------------------------ */
 const searchbar = document.getElementById('searchbar');
+const searchActive = searchbar.querySelector('.active');
 let searchClicked = false;
 searchbar.addEventListener('click', (e) => {
   e.preventDefault();
   if (searchClicked) return;
   searchClicked = true;
-  searchbar.classList.add('clicked');
-  setTimeout(() => { window.location.href = searchbar.getAttribute('href'); }, 1000);
+  gsap.to(searchActive, { opacity: 1, duration: .2, ease: 'power1.out' });
+  gsap.delayedCall(1, () => { window.location.href = searchbar.getAttribute('href'); });
 });
 
 /* ---- viewport-triggered reveals -------------------------------------
